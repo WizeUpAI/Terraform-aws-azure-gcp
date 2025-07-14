@@ -1,0 +1,60 @@
+stages:
+  - terraform
+  - build
+  - deploy
+
+variables:
+  PROJECT_ID: "ton-project-gcp"
+  REGION: "us-central1"
+  SERVICE_NAME: "fastapi-cloudrun"
+  IMAGE_NAME: "gcr.io/$PROJECT_ID/$SERVICE_NAME"
+  TF_WORKING_DIR: "terraform"   # dossier où se trouve ta conf terraform
+
+before_script:
+  # Installer Google Cloud SDK
+  - echo "$GCP_SERVICE_ACCOUNT_KEY" | base64 -d > gcloud-key.json
+  - curl -sSL https://sdk.cloud.google.com | bash > /dev/null
+  - source $HOME/google-cloud-sdk/path.bash.inc
+  - gcloud auth activate-service-account --key-file=gcloud-key.json
+  - gcloud config set project $PROJECT_ID
+  - gcloud auth configure-docker
+
+terraform:
+  stage: terraform
+  image: hashicorp/terraform:light
+  script:
+    - cd $TF_WORKING_DIR
+    - terraform init
+    - terraform validate
+    - terraform apply -auto-approve
+  only:
+    - main
+
+build:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - docker build -t $IMAGE_NAME .
+    - docker push $IMAGE_NAME
+  only:
+    - main
+
+deploy:
+  stage: deploy
+  image: google/cloud-sdk:latest
+  script:
+    - gcloud run deploy $SERVICE_NAME --image $IMAGE_NAME --region $REGION --platform managed --allow-unauthenticated
+  only:
+    - main
+
+#Variables à configurer dans GitLab CI/CD (Settings > CI/CD > Variables) :
+#GCP_SERVICE_ACCOUNT_KEY : clé JSON du compte de service GCP encodée en base64
+#PROJECT_ID : ton ID projet GCP
+#REGION : région Cloud Run (ex: us-central1)
+
+#Étapes :
+#build : construit et pousse l’image Docker dans Google Container Registry
+#deploy : déploie l’image sur Cloud Run en mode serverless
+#Le déploiement est fait uniquement sur la branche main.

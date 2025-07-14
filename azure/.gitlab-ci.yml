@@ -1,0 +1,68 @@
+stages:
+  - terraform
+  - build
+  - deploy
+
+variables:
+  AZURE_RESOURCE_GROUP: "mon-groupe-ressource"
+  AZURE_LOCATION: "eastus"
+  ACR_NAME: "monacr"          # doit être globalement unique
+  IMAGE_NAME: "$ACR_NAME.azurecr.io/fastapi-api"
+  TF_WORKING_DIR: "terraform"
+
+before_script:
+  # Installer Azure CLI
+  - apk add --no-cache bash curl jq python3 py3-pip
+  - pip3 install --upgrade pip
+  - curl -sL https://aka.ms/InstallAzureCLIDeb | bash
+  # Connexion à Azure via service principal
+  - az login --service-principal -u $AZURE_CLIENT_ID -p $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID
+  - az account set --subscription $AZURE_SUBSCRIPTION_ID
+
+terraform:
+  stage: terraform
+  image: hashicorp/terraform:light
+  script:
+    - cd $TF_WORKING_DIR
+    - terraform init
+    - terraform validate
+    - terraform apply -auto-approve
+  only:
+    - main
+
+build:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    # Connexion à ACR
+    - echo $AZURE_CLIENT_SECRET | docker login $ACR_NAME.azurecr.io --username $AZURE_CLIENT_ID --password-stdin
+    # Build et push image Docker
+    - docker build -t $IMAGE_NAME .
+    - docker push $IMAGE_NAME
+  only:
+    - main
+
+deploy:
+  stage: deploy
+  image: mcr.microsoft.com/azure-cli
+  script:
+    # Exemple : déployer sur Azure Container Instances
+    - az container create --resource-group $AZURE_RESOURCE_GROUP --name fastapi-container --image $IMAGE_NAME --dns-name-label fastapi-api-$CI_PIPELINE_ID --ports 80
+  only:
+    - main
+
+#Variables GitLab à configurer (Settings > CI/CD > Variables) :
+#AZURE_CLIENT_ID
+#AZURE_CLIENT_SECRET
+#AZURE_TENANT_ID
+#AZURE_SUBSCRIPTION_ID
+#AZURE_RESOURCE_GROUP
+#AZURE_LOCATION
+#ACR_NAME (nom unique pour Azure Container Registry)
+
+#Notes :
+#Le stage terraform doit contenir les fichiers Terraform qui provisionnent l’infra Azure (ACR, ressources réseaux, App Service ou Container Instances, Load Balancer, DNS, etc.)
+#Le build utilise Docker-in-Docker pour construire et pousser l’image dans ACR
+#Le deploy utilise Azure CLI pour déployer l’image (ici Azure Container Instances en exemple, tu peux adapter selon ton infra Terraform)

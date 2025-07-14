@@ -1,0 +1,70 @@
+stages:
+  - terraform
+  - build
+  - deploy
+
+variables:
+  AWS_REGION: "us-east-1"
+  AWS_ECR_REPOSITORY: "fastapi-api"
+  ECS_CLUSTER_NAME: "fastapi-cluster"
+  ECS_SERVICE_NAME: "fastapi-service"
+  TF_WORKING_DIR: "terraform"
+
+before_script:
+  # Installer AWS CLI
+  - apk add --no-cache py3-pip
+  - pip3 install awscli
+  # Configurer AWS CLI avec les variables d'environnement (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
+  - aws configure set region $AWS_REGION
+
+terraform:
+  stage: terraform
+  image: hashicorp/terraform:light
+  script:
+    - cd $TF_WORKING_DIR
+    - terraform init
+    - terraform validate
+    - terraform apply -auto-approve
+  only:
+    - main
+
+build:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    # Connexion à ECR
+    - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $(aws sts get-caller-identity --query Account --output text).dkr.ecr.$AWS_REGION.amazonaws.com
+    # Build et push image Docker
+    - docker build -t $AWS_ECR_REPOSITORY .
+    - docker tag $AWS_ECR_REPOSITORY:latest $(aws sts get-caller-identity --query Account --output text).dkr.ecr.$AWS_REGION.amazonaws.com/$AWS_ECR_REPOSITORY:latest
+    - docker push $(aws sts get-caller-identity --query Account --output text).dkr.ecr.$AWS_REGION.amazonaws.com/$AWS_ECR_REPOSITORY:latest
+  only:
+    - main
+
+deploy:
+  stage: deploy
+  image: amazon/aws-cli:latest
+  script:
+    # Mise à jour de la tâche ECS avec la nouvelle image
+    - >
+      aws ecs update-service --cluster $ECS_CLUSTER_NAME --service $ECS_SERVICE_NAME
+      --force-new-deployment
+  only:
+    - main
+
+
+#À configurer dans GitLab CI/CD (Variables protégées)
+#AWS_ACCESS_KEY_ID
+#AWS_SECRET_ACCESS_KEY
+#AWS_REGION (ex: us-east-1)
+#AWS_ECR_REPOSITORY (ex: fastapi-api)
+#ECS_CLUSTER_NAME (ex: fastapi-cluster)
+#ECS_SERVICE_NAME (ex: fastapi-service)
+
+#Notes
+#Le dossier terraform/ doit contenir ta configuration infra AWS (VPC, ECS Cluster, ALB, etc.)
+#Le stage terraform applique cette infra avant de builder et déployer
+#Le build Docker utilise Docker-in-Docker (docker:dind)
+#Le deploy force le redéploiement de la tâche ECS avec la dernière image
