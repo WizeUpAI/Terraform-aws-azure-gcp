@@ -5,6 +5,8 @@
 # [Cognito Login (via ALB Listener Rules)]
 #        ↓
 # [FastAPI on ECS Fargate]
+#User → API Gateway (JWT/Cognito auth) → FastAPI (ECS / EC2 / Lambda)
+#                                    ↘︎ Cognito User Pool (auth)
 
 variable "aws_region" {}
 variable "docker_image" {}
