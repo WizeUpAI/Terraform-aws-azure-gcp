@@ -1,5 +1,5 @@
 Voici la liste complète et à jour des bases de données AWS, classées par type (relationnel, NoSQL, cache, etc.), avec pour chaque service son cas d’usage principal ✅ :
-
+```
 🟦 1. Bases de données relationnelles (SQL)
 Service	Description	Cas d’usage
 Amazon RDS	Service managé pour bases relationnelles classiques	Apps Web, ERP, systèmes transactionnels
@@ -38,7 +38,7 @@ Amazon QLDB (Quantum Ledger DB)	Base de type "ledger", immuable et traçable	Aud
 🟥 7. Bases personnalisées via conteneur / EC2
 Option	Description	Cas d’usage
 Self-hosted DB on EC2 / ECS / EKS	Gère toi-même la base, tout type supporté	Contrôle total, DB exotique (ex: InfluxDB, TimescaleDB, CouchDB...)
-
+```
 🧠 Synthèse par cas d’usage
 Besoin	Recommandé
 SQL managé classique	RDS
@@ -58,7 +58,7 @@ Souhaites-tu une carte mentale visuelle, un comparatif avec GCP/Azure, ou un exe
 Voici des exemples Terraform pour créer chacune des bases de données AWS listées, avec des configurations simples et fonctionnelles. Tu pourras ajuster selon ton besoin.
 
 1️⃣ Amazon RDS (PostgreSQL)
- 
+```
 provider "aws" {
   region = "us-east-1"
 }
@@ -76,9 +76,9 @@ resource "aws_db_instance" "postgres" {
   skip_final_snapshot = true
   publicly_accessible = true
 }
-
+```
 2️⃣ Amazon Aurora (PostgreSQL compatible)
- 
+```
 resource "aws_rds_cluster" "aurora" {
   cluster_identifier      = "aurora-cluster"
   engine                  = "aurora-postgresql"
@@ -97,9 +97,9 @@ resource "aws_rds_cluster_instance" "aurora_instances" {
   engine_version          = aws_rds_cluster.aurora.engine_version
   publicly_accessible     = true
 }
-
+```
 3️⃣ Amazon DynamoDB
- 
+```
 resource "aws_dynamodb_table" "users" {
   name         = "users"
   billing_mode = "PAY_PER_REQUEST"
@@ -115,9 +115,9 @@ resource "aws_dynamodb_table" "users" {
     Project     = "example"
   }
 }
-
+```
 4️⃣ Amazon DocumentDB (MongoDB compatible)
- 
+```
 resource "aws_docdb_cluster" "docdb_cluster" {
   cluster_identifier      = "docdb-cluster"
   master_username         = "admin"
@@ -134,9 +134,9 @@ resource "aws_docdb_cluster_instance" "docdb_instances" {
   engine                  = "docdb"
   publicly_accessible     = true
 }
-
+```
 5️⃣ Amazon Keyspaces (Cassandra compatible)
- 
+```
 resource "aws_keyspaces_keyspace" "example" {
   keyspace_name = "example_keyspace"
 }
@@ -155,9 +155,9 @@ resource "aws_keyspaces_table" "example_table" {
     }
   }
 }
-
+```
 6️⃣ Amazon ElastiCache for Redis
- 
+ ```
 resource "aws_elasticache_cluster" "redis" {
   cluster_id           = "redis-cluster"
   engine               = "redis"
@@ -172,9 +172,9 @@ resource "aws_elasticache_subnet_group" "redis_subnet_group" {
   name       = "redis-subnet-group"
   subnet_ids = ["subnet-12345", "subnet-67890"] # Adapter
 }
-
+```
 7️⃣ Amazon Neptune (Graph DB)
- 
+ ```
 resource "aws_neptune_cluster" "neptune_cluster" {
   cluster_identifier = "neptune-cluster"
   iam_database_authentication_enabled = true
@@ -189,9 +189,9 @@ resource "aws_neptune_cluster_instance" "neptune_instances" {
   engine            = "neptune"
   publicly_accessible = true
 }
-
+```
 8️⃣ Amazon Timestream (Time series DB)
- 
+ ```
 resource "aws_timestreamwrite_database" "example" {
   database_name = "example_db"
 }
@@ -204,15 +204,15 @@ resource "aws_timestreamwrite_table" "example_table" {
     magnetic_store_retention_period_in_days = 7
   }
 }
-
+```
 9️⃣ Amazon QLDB (Ledger DB)
- 
+ ```
 resource "aws_qldb_ledger" "example" {
   name                  = "example-ledger"
   deletion_protection    = false
   permissions_mode      = "STANDARD"
 }
-
+```
 🔥 Notes :
 Pour certains services comme ElastiCache ou DocumentDB, il faut penser à configurer les groupes de sécurité, les VPCs, et les sous-réseaux.
 
