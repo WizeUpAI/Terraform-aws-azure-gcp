@@ -39,7 +39,8 @@ resource "google_sql_user" "user" {
 resource "google_sql_database" "database" {
   name     = "mydb"
   instance = google_sql_database_instance.db.name
-}```
+}
+```
 
 2️⃣ Firestore (Native Mode)
 ```
@@ -77,7 +78,9 @@ resource "google_bigtable_instance" "bt" {
 ```
 
 5️⃣ Firebase Realtime Database
+```
 Firebase RTDB n’a pas de ressource Terraform officielle GCP native. Tu dois passer par gcloud ou la console Firebase. Possible via google_firebase_project + API.
+```
 
 6️⃣ BigQuery (dataset)
 ```
