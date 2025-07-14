@@ -1,3 +1,19 @@
+#                [User Browser]
+#                       │
+#                       ▼
+#            ┌──────────────────────┐
+#            │   Cloud Load Balancer│  ← HTTPS + TLS
+#            └────────┬─────────────┘
+#                     │
+#          [Identity-Aware Proxy (IAP)]
+#                     │  🔒 Authentifie avec Google Identity
+#                     ▼
+#              [Cloud Run (FastAPI)]
+#                     │
+#             Docker container HTTPS
+#                     ▼
+#           [Cloud Logging / Monitoring]
+
 provider "google" {
   project     = var.project_id
   region      = var.region
@@ -106,22 +122,6 @@ resource "google_dns_record_set" "dns" {
 #🌐 External HTTPS Load Balancer
 #🌍 Nom de domaine personnalisé via Cloud DNS
 #🔐 Authentification avec IAP (Identity-Aware Proxy)
-
-#                [User Browser]
-#                       │
-#                       ▼
-#            ┌──────────────────────┐
-#            │   Cloud Load Balancer│  ← HTTPS + TLS
-#            └────────┬─────────────┘
-#                     │
-#          [Identity-Aware Proxy (IAP)]
-#                     │  🔒 Authentifie avec Google Identity
-#                     ▼
-#              [Cloud Run (FastAPI)]
-#                     │
-#             Docker container HTTPS
-#                     ▼
-#           [Cloud Logging / Monitoring]
 
 #Composants GCP utilisés :
 #Composant	Rôle

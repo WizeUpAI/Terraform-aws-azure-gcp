@@ -1,4 +1,12 @@
 
+# [Azure DNS]
+#    ↓
+# [Azure Front Door (HTTPS)]
+#    ↓
+# [AAD Auth via Front Door]
+#    ↓
+# [Azure Container App (FastAPI Docker)]
+
 # ----------------------
 # Azure Variables
 # ----------------------
@@ -145,13 +153,7 @@ resource "azurerm_dns_cname_record" "cname" {
 
 # AAD auth would be configured manually via Azure Front Door portal or Bicep
 
-[Azure DNS]
-   ↓
-[Azure Front Door (HTTPS)]
-   ↓
-[AAD Auth via Front Door]
-   ↓
-[Azure Container App (FastAPI Docker)]
+
 
 #Résumé de ce que fait ce code
 #Élément	Description

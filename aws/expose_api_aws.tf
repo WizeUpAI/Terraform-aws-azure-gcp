@@ -1,4 +1,10 @@
-
+# [Route 53 DNS]
+#        ↓
+# [ALB HTTP:80 / HTTPS:443]
+#       ↓
+# [Cognito Login (via ALB Listener Rules)]
+#        ↓
+# [FastAPI on ECS Fargate]
 
 variable "aws_region" {}
 variable "docker_image" {}
@@ -181,14 +187,6 @@ resource "aws_route53_record" "dns" {
     evaluate_target_health = true
   }
 }
-
-#[Route 53 DNS]
-#       ↓
-#[ALB HTTP:80 / HTTPS:443]
-#      ↓
-#[Cognito Login (via ALB Listener Rules)]
-#       ↓
-#[FastAPI on ECS Fargate]
 
 #Prérequis
 #Certificat ACM validé pour api.yourdomain.com
