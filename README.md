@@ -23,4 +23,15 @@ Azure Machine Learning → Vertex AI
 ✅ Data & Analytics
 AWS Redshift → BigQuery 
 Azure Synapse → BigQuery
+
+| Caractéristique     | GCP Cloud Run      | AWS App Runner        | Azure Container Apps    |
+| ------------------- | ------------------ | --------------------- | ----------------------- |
+| Mode d’exécution    | Container Docker   | Container Docker      | Container Docker        |
+| Autoscaling         | Oui (scale to 0)   | Oui (scale to 0)      | Oui (scale to 0)        |
+| Stateless           | Oui                | Oui                   | Oui                     |
+| HTTPS automatique   | Oui                | Oui                   | Oui                     |
+| Auth intégrée       | IAP, Firebase Auth | IAM / Cognito         | Azure AD / JWT          |
+| CI/CD native        | Cloud Build        | CodePipeline / GitHub | GitHub Actions / DevOps |
+| Mode de facturation | À la requête       | À la requête          | À la demande            |
+
 ```
